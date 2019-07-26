@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -fopenmp  -O3  -shared -Wl,-soname,libopenpose_thread.so -o libopenpose_thread.so CMakeFiles/openpose_thread.dir/defineTemplates.cpp.o -Wl,-rpath,/home/whil/Developer/sub/openpose/build/src/openpose/core: ../core/libopenpose_core.so -Wl,-Bstatic -lcudart_static -Wl,-Bdynamic -lpthread -ldl -lrt 
