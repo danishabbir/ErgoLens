@@ -1,1 +1,1 @@
-3d pose reconstruction with custom logitech cameras
+3d pose reconstruction from multiple usb camera streams
