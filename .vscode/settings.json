@@ -55,5 +55,6 @@
         "utility": "cpp",
         "optional": "cpp",
         "string_view": "cpp"
-    }
+    },
+    "python.pythonPath": "/usr/local/bin/python3"
 }
