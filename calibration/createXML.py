@@ -27,14 +27,19 @@ if __name__ == '__main__':
     extMatStrs = [0] * len(f_list)
 
     # ------------------------------- create an extrinsic parameters matrix for each camera ---------------------------------
+    # choose the calibration stack frame from calib.params with the lowest RMS error
     print('Retrieving camera extrinsic parameters... (' + opt.input_path + ')')
     info = open(opt.input_path, 'r')
     txt = info.read()
-    rotMatStrs = txt.split('Calibration stack frame: ')[1].replace(';', ',').split('[')
-    transMatStrs = txt.split('Translations: ')[1].replace(';', ',').split('[')
+    splitOnCalib = txt.split('Calibration stack frame: ')[1:]
+    splitOnTrans = txt.split('Translations: ')[1:]
+    rms = [text.split('RMS: ')[1].split()[0] for text in splitOnCalib]
+    stackFrameIdx = np.argmin(rms)
+    rotMatStrs = splitOnCalib[stackFrameIdx].replace(';', ',').split('[')
+    transMatStrs = splitOnTrans[stackFrameIdx].replace(';', ',').split('[')
 
     for i in range(len(f_list)):
-        rotMatStr, transMatStr = rotMatStrs[i+1], transMatStrs[i+1] # get what comes after '['
+        rotMatStr, transMatStr = rotMatStrs[i+1], transMatStrs[i+1] # disregard '[' and grab everything up to and before the next '['
         # disregard ']'
         if i < len(f_list)-1:
             rotMatStr, transMatStr = rotMatStr.replace(']', ''), transMatStr.replace(']', '')
@@ -48,6 +53,7 @@ if __name__ == '__main__':
         extMatStrs[i] = np.array2string(extMat).strip('[]').replace('  ', ' ')
     
     # ------------------------------- insert the appropriate extrinsic parameters matrix into each camera's XML file ----------------------------------
+    print('Writing extinsic parameters matrices to XML files: ')
     for i,f in enumerate(f_list):
         tree = ET.parse(opt.output_folder + '/' + f)
         root = tree.getroot()
@@ -59,7 +65,6 @@ if __name__ == '__main__':
         # append header as a string at the beginning (in order to keep the double quotes instead of single quotes)
         xmlHeader = "<?xml version=\"1.0\"?>"
         xmlStr = xmlHeader + str(ET.tostring(root)).replace('b\'', '').replace('\'', '').replace('\\n', '').replace('  ', ' ')
-        print(xmlStr)
         with open(opt.output_folder + '/' + f, 'w') as openF:
             openF.write(xmlStr)
         
