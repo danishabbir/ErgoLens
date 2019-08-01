@@ -20,9 +20,11 @@ class Actuator:
 
 
 class RULA():
-    def __init__(self, right_arm, left_arm):
+    def __init__(self, right_arm, left_arm, back):
         self.right_arm = right_arm
         self.left_arm = left_arm
+
+        self.back = back
 
         self.upper_arm_score = 0
         self.lower_arm_score = 0
@@ -31,6 +33,7 @@ class RULA():
 
         self.trunk_score = 0
         self.neck_score = 0
+        self.leg_score = 1
 
     def upperArmPositions(self):
         upper_arm_angle, _ = 90 - self.right_arm.coord2Angle()
@@ -76,7 +79,7 @@ class RULA():
         return 
         
     def trunkPosition(self):
-        trunk_angle, _ = back.coord2Angle()
+        trunk_angle, _ = self.back.coord2Angle()
 
         #standing & seated difference 
         if trunk_angle > 0 and trunk_angle < 10:
@@ -90,7 +93,7 @@ class RULA():
         return self.trunk_score
     
     def neckPosition(self):
-        _, neck_angle = back.coord2Angle()
+        _, neck_angle = self.back.coord2Angle()
 
         if neck_angle > 0 and neck_angle < 10:
             self.neck_score += 1
@@ -98,8 +101,9 @@ class RULA():
             self.neck_score += 2
         elif neck_angle > 20: #signs/angle direction will be important
             self.neck_score += 3
-        elif neck_angle > -40: 
+        elif neck_angle < -20: 
             self.neck_score += 4
+        return self.neck_score
 
 
     def computeRULA(self):
@@ -107,6 +111,8 @@ class RULA():
         
         upperArmPositions(self)
         lowerArmPositions(self)
+        trunkPosition(self)
+        neckPosition(self)
         #wristScore(self)
         #wristTwist(self)
 
@@ -132,12 +138,28 @@ def main():
     left_arm_angle = left_arm.coord2Angle()
     print("left_arm_angle", left_arm_angle)
 
-    rula = RULA(right_arm, left_arm)
+    back = Actuator(parts, 'MidHip', 'Neck', 'Nose')
+    trunk_angle, neck_angle = back.coord2Angle()
+    print("neck_angle", neck_angle)
+    print("trunk_angle", trunk_angle)
+
+    print("\n", "------------")
+
+    rula = RULA(right_arm, left_arm, back)
     upper_arm_score = rula.upperArmPositions()
     print(upper_arm_score)
 
     lower_arm_score = rula.lowerArmPositions()
     print(lower_arm_score)
+
+    neck_score = rula.neckPosition()
+    print(neck_score)
+
+    trunk_score = rula.trunkPosition()
+    print("trunk_score", trunk_score)
+
+    leg_score = rula.leg_score
+    print("leg_score", leg_score) #set
 
     #left_shin = Actuator(parts, 'LKnee', 'LAnkle', 'LHeel')
     #left_shin_angle = left_shin.coord2Angle()
@@ -146,11 +168,56 @@ def main():
     #left_full_leg_angle = left_full_leg.coord2Angle()
     #print("left_full_leg_angle", left_full_leg_angle)
 
-    Head = (parts[kptDict['REye']] + parts[kptDict['LEye']]) / 2
+    #Head = (parts[kptDict['REye']] + parts[kptDict['LEye']]) / 2
     #modify this to be better
-    back = Actuator(parts, 'MidHip', 'Neck', 'Nose') #change to head
+    
     #back_angle = back.coord2Angle()
     #print("back_angle", back_angle)
+
+
+    table_a_scores = [
+                        [[[1, 2], [2, 2], [2, 3], [3, 3]], [[2, 2], [2, 2], [3, 3], [3, 3]], [[2, 3], [3, 3], [3, 4], [4, 4]]],  #1
+                        [[[2, 3], [3, 3], [3, 4], [4, 4]], [[3, 3], [3, 3], [3, 4], [4, 4]], [[3, 4], [4, 4], [4, 4], [5, 5]]],  #2
+                        [[[3, 3], [4, 4], [4, 4], [5, 5]], [[3, 4], [4, 4], [4, 4], [5, 5]], [[4, 4], [4, 4], [4, 5], [5, 5]]],  #3
+                        [[[4, 4], [4, 4], [4, 5], [5, 5]], [[4, 4], [4, 4], [4, 5], [5, 5]], [[4, 4], [4, 5], [5, 5], [6, 6]]],  #4
+                        [[[5, 5], [5, 5], [5, 6], [6, 7]], [[5, 6], [6, 6], [6, 7], [7, 7]], [[6, 6], [6, 7], [7, 7], [7, 8]]],  #5
+                        [[[7, 7], [7, 7], [7, 8], [8, 9]], [[8, 8], [8, 8], [8, 9], [9, 9]], [[9, 9], [9, 9], [9, 9], [9, 9]]]   #6
+                    ]
+
+    table_a_val = table_a_scores[upper_arm_score - 1][lower_arm_score - 1][0][0]
+    print(table_a_val)
+
+    table_b_scores = [
+                        [[1, 3], [2, 3], [3, 4], [5, 5], [6, 6], [7, 7]],  #1
+                        [[2, 3], [2, 3], [4, 5], [5, 5], [6, 7], [7, 7]],  #2
+                        [[3, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 7]],  #3
+                        [[5, 5], [5, 6], [6, 7], [7, 7], [7, 7], [8, 8]],  #4
+                        [[7, 7], [7, 7], [7, 8], [8, 8], [8, 8], [8, 8]],  #5
+                        [[8, 8], [8, 8], [8, 8], [8, 9], [9, 9], [9, 9]]   #6
+                    ]
+
+    table_b_val = table_b_scores[neck_score - 1][trunk_score - 1][leg_score - 1]
+    print(table_b_val)
+
+    table_c_scores = [
+                        [1, 2, 3, 3, 4, 5, 5],  #1
+                        [2, 2, 3, 4, 4, 5, 5],  #2
+                        [3, 3, 3, 4, 4, 5, 6],  #3
+                        [3, 3, 3, 4, 5, 6, 6],  #4
+                        [4, 4, 4, 5, 6, 7, 7],  #5
+                        [4, 4, 5, 6, 6, 7, 7],  #6
+                        [5, 5, 6, 6, 7, 7, 7],  #7
+                        [5, 5, 6, 7, 7, 7, 7]   #8
+                    ]
+
+    if table_a_val >= 8:
+      table_a_val = 8
+    if table_b_val >= 7:
+      table_b_val = 7
+
+    table_c_val = table_c_scores[table_a_val - 1][table_b_val - 1]
+    print("RULA score is:", table_c_val)
+
 
 if __name__ == "__main__": 
     main()
