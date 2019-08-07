@@ -280,6 +280,59 @@ namespace op
 
             // renderFloor(); // Disabled, how to know where the floor is?
             std::unique_lock<std::mutex> lock{gKeypoints3D.mutex};
+
+            //render axis 
+            //***************************************** Editted by Golrokh ************************************************
+            glColor3f(1.0,0.0,0.0); // red x
+            glBegin(GL_LINES);
+            // x aix
+        
+            glVertex3f(-4.0, 0.0f, 0.0f);
+            glVertex3f(4.0, 0.0f, 0.0f);
+        
+            // arrow
+            glVertex3f(4.0, 0.0f, 0.0f);
+            glVertex3f(3.0, 1.0f, 0.0f);
+        
+            glVertex3f(4.0, 0.0f, 0.0f);
+            glVertex3f(3.0, -1.0f, 0.0f);
+            glEnd();
+            glFlush();
+        
+        
+        
+            // y 
+            glColor3f(0.0,1.0,0.0); // green y
+            glBegin(GL_LINES);
+            glVertex3f(0.0, -4.0f, 0.0f);
+            glVertex3f(0.0, 4.0f, 0.0f);
+        
+            // arrow
+            glVertex3f(0.0, 4.0f, 0.0f);
+            glVertex3f(1.0, 3.0f, 0.0f);
+        
+            glVertex3f(0.0, 4.0f, 0.0f);
+            glVertex3f(-1.0, 3.0f, 0.0f);
+            glEnd();
+            glFlush();
+        
+            // z 
+            glColor3f(0.0,0.0,1.0); // blue z
+            glBegin(GL_LINES);
+            glVertex3f(0.0, 0.0f ,-4.0f );
+            glVertex3f(0.0, 0.0f ,4.0f );
+        
+            // arrow
+            glVertex3f(0.0, 0.0f ,4.0f );
+            glVertex3f(0.0, 1.0f ,3.0f );
+        
+            glVertex3f(0.0, 0.0f ,4.0f );
+            glVertex3f(0.0, -1.0f ,3.0f );
+            glEnd();
+            glFlush(); 
+            //***************************************** finish editing ************************************************
+
+
             if (gKeypoints3D.validKeypoints)
             {
                 renderHumanBody(gKeypoints3D.poseKeypoints, getPoseBodyPartPairsRender(sPoseModel),
